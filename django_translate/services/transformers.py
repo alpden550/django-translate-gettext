@@ -81,7 +81,8 @@ class ClassDefTransformer(ast.NodeTransformer):
         return instance
 
     def generate_assign_gettext(self, *, instance: ast.Assign | stmt) -> ast.Assign:
-        if hasattr(instance.value, "func") and instance.value.func.attr in ("ForeignKey", "ManyToManyField"):
+        f_keys = ("ForeignKey", "ManyToManyField", "OneToOneField")
+        if hasattr(instance.value, "func") and instance.value.func.attr in f_keys:
             self.generate_fk_gettext(instance=instance)
             return instance
 
