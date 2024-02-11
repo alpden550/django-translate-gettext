@@ -1,4 +1,5 @@
 import ast
+import subprocess
 from pathlib import Path
 
 from loguru import logger
@@ -6,7 +7,7 @@ from loguru import logger
 from django_translate.services.transformers import ClassDefTransformer
 
 
-def update_py_file(*, file_path: str) -> None:
+def update_py_file(*, file_path: str, formatted: bool = False) -> None:
     model_file = Path(file_path).with_suffix(".py").absolute()
     tree = ast.parse(model_file.read_text())
 
@@ -18,3 +19,7 @@ def update_py_file(*, file_path: str) -> None:
     model_file.write_text(code)
 
     logger.info(f"File {model_file} has been updated")
+
+    if formatted:
+        logger.info("Formatting the code...")
+        subprocess.run(["ruff", "format", str(model_file)], check=True)  # noqa: S603, S607
