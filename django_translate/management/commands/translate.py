@@ -1,4 +1,3 @@
-import subprocess
 from collections.abc import Generator
 
 from django.apps import apps
@@ -29,21 +28,17 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(error))
                 continue
 
-            self.process_app_models(app_models=app_models)
+            self.process_app_models(app_models=app_models, **options)
 
-            if options["format"]:
-                self.stdout.write(self.style.SUCCESS("Formatting the code..."))
-                subprocess.run(["ruff", "format", "."], check=True)  # noqa: S603, S607
-                self.stdout.write(self.style.SUCCESS("The code has been formatted successfully."))
-
-    def process_app_models(self, *, app_models: Generator[Model]) -> None:
+    def process_app_models(self, *, app_models: Generator[Model], **options) -> None:
         for model in app_models:
             module: str = model._meta.concrete_model.__module__
             module_path = module.replace(".", "/")
 
-            update_py_file(file_path=module_path)
+            update_py_file(file_path=module_path, formatted=options["format"])
 
             self.stdout.write(self.style.SUCCESS("Successfully added gettext for model files."))
+
             self.stdout.write(
                 self.style.WARNING(
                     "Please, check the files, and don't forget to call migrate command to apply the changes "
