@@ -1,9 +1,31 @@
 [tool.poetry]
 name = "django-translate"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "Django app for translating models from the given apps"
 authors = ["Denis Novikov <alpden550@gmail.com>"]
 readme = "README.md"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation",
+    "Environment :: Web Environment",
+    'License :: OSI Approved :: MIT License',
+    "Framework :: Django",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
+]
+license = "MIT License"
+homepage = 'https://github.com/alpden550/django-translate'
+repository = 'https://github.com/alpden550/django-translate'
+keywords = ["django", "django-orm", "django app", "ast", "orm"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
