@@ -1,14 +1,13 @@
 import ast
 from pathlib import Path
 
-from django.conf import settings
 from loguru import logger
 
 from django_translate.services.transformers import ClassDefTransformer
 
 
 def update_py_file(*, file_path: str) -> None:
-    model_file = Path(settings.BASE_DIR, file_path).with_suffix(".py").absolute()
+    model_file = Path(file_path).with_suffix(".py").absolute()
     tree = ast.parse(model_file.read_text())
 
     transformer = ClassDefTransformer()
