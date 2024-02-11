@@ -93,7 +93,6 @@ select = [
   "ARG", # flake8-unused-arguments
   "TD", # flake8-todos
   "FLY", # flynt,
-  "LOG", # flake8-logging
 ]
 ignore= ["S101", "COM812", "ISC001"]
 
