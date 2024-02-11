@@ -30,6 +30,18 @@ class Command(BaseCommand):
 
             self.process_app_models(app_models=app_models, **options)
 
+        self.stdout.write(
+            self.style.WARNING(
+                "Please, check the files, and don't forget to call migrate command to apply the changes "
+                "to the database after adding the gettext."
+            )
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Please, un the command 'python manage.py makemessages -l {lang code}' to create the .po files."
+            )
+        )
+
     def process_app_models(self, *, app_models: Generator[Model], **options) -> None:
         for model in app_models:
             module: str = model._meta.concrete_model.__module__
@@ -38,15 +50,3 @@ class Command(BaseCommand):
             update_py_file(file_path=module_path, formatted=options["format"])
 
             self.stdout.write(self.style.SUCCESS("Successfully added gettext for model files."))
-
-            self.stdout.write(
-                self.style.WARNING(
-                    "Please, check the files, and don't forget to call migrate command to apply the changes "
-                    "to the database after adding the gettext."
-                )
-            )
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "Please, un the command 'python manage.py makemessages -l {lang code}' to create the .po files."
-                )
-            )

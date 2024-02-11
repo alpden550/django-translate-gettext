@@ -18,8 +18,6 @@ def update_py_file(*, file_path: str, formatted: bool = False) -> None:
     code = ast.unparse(new_tree)
     model_file.write_text(code)
 
-    logger.info(f"File {model_file} has been updated")
-
     if formatted:
         logger.info("Formatting the code...")
         subprocess.run(["ruff", "format", str(model_file)], check=True)  # noqa: S603, S607
