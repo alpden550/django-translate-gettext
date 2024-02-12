@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-translate-gettext"
-version = "0.1.54"
+version = "0.1.6"
 description = "Django app for translating models from the given apps"
 authors = ["Denis Novikov <alpden550@gmail.com>"]
 readme = "README.md"
