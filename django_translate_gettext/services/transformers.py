@@ -1,5 +1,6 @@
 import ast
 from _ast import stmt
+from contextlib import suppress
 
 
 class ClassDefTransformer(ast.NodeTransformer):
@@ -81,10 +82,12 @@ class ClassDefTransformer(ast.NodeTransformer):
         return instance
 
     def generate_assign_gettext(self, *, instance: ast.Assign | stmt) -> ast.Assign:
-        f_keys = ("ForeignKey", "ManyToManyField", "OneToOneField")
-        if hasattr(instance.value, "func") and instance.value.func.attr in f_keys:
-            self.generate_fk_gettext(instance=instance)
-            return instance
+        with suppress(AttributeError):
+            f_keys = ("ForeignKey", "ManyToManyField", "OneToOneField")
+            func = instance.value.func
+            if hasattr(func, "attr") and func.attr in f_keys:
+                self.generate_fk_gettext(instance=instance)
+                return instance
 
         if isinstance(instance.value, ast.Tuple):
             instance.value = self.generate_tuple_gettext(value=instance.value)
