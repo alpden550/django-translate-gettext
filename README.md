@@ -7,6 +7,10 @@ It uses the django model translation and gettext package to achieve this.
 ## Installation
 
 ```bash
+poetry add django-translate-gettext
+
+# or
+poetry add git+https://github.com/alpden550/django-translate.git
 ```
 
 ## Usage
