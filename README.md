@@ -20,7 +20,7 @@ Add `django_translate` to your `INSTALLED_APPS` setting like this:
 ```python
 INSTALLED_APPS = [
     ...,
-    'django_translate',
+    'django_translate_gettext',
     ...
 ]
 ```
