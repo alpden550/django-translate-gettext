@@ -85,7 +85,7 @@ class ClassDefTransformer(ast.NodeTransformer):
         with suppress(AttributeError):
             f_keys = ("ForeignKey", "ManyToManyField", "OneToOneField")
             func = instance.value.func
-            if hasattr(func, "attr") and func.attr in f_keys:
+            if (hasattr(func, "attr") and func.attr in f_keys) or hasattr(func, "id"):
                 self.generate_fk_gettext(instance=instance)
                 return instance
 
