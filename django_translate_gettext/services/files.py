@@ -19,5 +19,5 @@ def update_py_file(*, file_path: str, formatted: bool = False) -> None:
     model_file.write_text(code)
 
     if formatted:
-        logger.info("Formatting the code...")
+        logger.info(f"Formatting the code for file {model_file!s}")
         subprocess.run(["ruff", "format", str(model_file)], check=True)  # noqa: S603, S607
