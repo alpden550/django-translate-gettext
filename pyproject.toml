@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "django-translate-gettext"
-version = "0.1.7"
+version = "0.1.71"
 description = "Django app to wrap models fields to gettext calling for the given apps"
 authors = ["Denis Novikov <alpden550@gmail.com>"]
 readme = "README.md"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -23,8 +23,8 @@ classifiers = [
     "Topic :: Utilities",
 ]
 license = "MIT License"
-homepage = 'https://github.com/alpden550/django-translate'
-repository = 'https://github.com/alpden550/django-translate'
+homepage = 'https://github.com/alpden550/django-translate-gettext'
+repository = 'https://github.com/alpden550/django-translate-gettext'
 keywords = ["django", "django-orm", "django app", "ast", "orm"]
 
 [tool.poetry.dependencies]
