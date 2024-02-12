@@ -4,7 +4,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from django_translate.services.transformers import ClassDefTransformer
+from django_translate_gettext.services.transformers import ClassDefTransformer
 
 
 def update_py_file(*, file_path: str, formatted: bool = False) -> None:

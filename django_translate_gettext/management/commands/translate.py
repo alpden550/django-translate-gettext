@@ -4,7 +4,7 @@ from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db.models import Model
 
-from django_translate.services import update_py_file
+from django_translate_gettext.services import update_py_file
 
 
 class Command(BaseCommand):
