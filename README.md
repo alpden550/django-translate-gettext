@@ -35,12 +35,37 @@ python manage.py translate app1 app2 app3 app4 --format
 
 [![asciicast](https://asciinema.org/a/K7TWvXujFr65D4hq0yiYRaXEV.svg)](https://asciinema.org/a/K7TWvXujFr65D4hq0yiYRaXEV)
 
-Model file before:
+Models files before:
 
+`demo/models/base.py`
+```python
+from django.db import models
+
+
+class Base(models.Model):
+    created_at = models.DateTimeField("Date Created", auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="Date Updated", auto_now=True)
+    items = models.JSONField(default=dict, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+```
+
+`demo/models/user.py`
 ```python
 import csv
 from pathlib import Path
 from django.db import models
+
+from demo.models import Base
+
+
+class CustomQuerySet(models.QuerySet):
+    def filter(self, *args, **kwargs):
+        return super().filter(*args, **kwargs).order_by("id")
+
+    class Meta:
+        abstract = True
 
 
 class UserTypes(models.TextChoices):
@@ -49,7 +74,7 @@ class UserTypes(models.TextChoices):
     STAFF = "staff", "Staff"
 
 
-class CustomUser(models.Model):
+class CustomUser(Base):
     class _InnerTypes(models.TextChoices):
         NEW = "new", "New"
         OLD = "old", "Old"
@@ -66,21 +91,47 @@ class CustomUser(models.Model):
     groups = models.ManyToManyField("auth.Group", verbose_name="Custom Groups", blank=True)
     owner = models.ForeignKey("auth.User", related_name="users", on_delete=models.CASCADE, blank=True, null=True)
 
+    objects = CustomQuerySet.as_manager()
+
     class Meta:
         verbose_name = "Own Custom User"
         verbose_name_plural = "Own Custom Users"
         ordering = ("-created_at",)
         get_latest_by = ("-created_at", "is_active")
-
 ```
 
-Model file after:
+Models files after:
 
+`demo/models/base.py`
+```python
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+
+class Base(models.Model):
+    created_at = models.DateTimeField(_("Date Created"), auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name=_("Date Updated"), auto_now=True)
+    items = models.JSONField(verbose_name=_("Items"), default=dict, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+```
+
+`demo/models/user.py`
 ```python
 import csv
 from pathlib import Path
 from django.db import models
+from demo.models import Base
 from django.utils.translation import gettext_lazy as _
+
+
+class CustomQuerySet(models.QuerySet):
+    def filter(self, *args, **kwargs):
+        return super().filter(*args, **kwargs).order_by("id")
+
+    class Meta:
+        abstract = True
 
 
 class UserTypes(models.TextChoices):
@@ -89,7 +140,7 @@ class UserTypes(models.TextChoices):
     STAFF = ("staff", _("Staff"))
 
 
-class CustomUser(models.Model):
+class CustomUser(Base):
     class _InnerTypes(models.TextChoices):
         NEW = ("new", _("New"))
         OLD = ("old", _("Old"))
@@ -109,6 +160,7 @@ class CustomUser(models.Model):
     owner = models.ForeignKey(
         "auth.User", verbose_name=_("Owner"), related_name="users", on_delete=models.CASCADE, blank=True, null=True
     )
+    objects = CustomQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("Own Custom User")
