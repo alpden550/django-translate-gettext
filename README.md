@@ -64,9 +64,6 @@ class CustomQuerySet(models.QuerySet):
     def filter(self, *args, **kwargs):
         return super().filter(*args, **kwargs).order_by("id")
 
-    class Meta:
-        abstract = True
-
 
 class UserTypes(models.TextChoices):
     ADMIN = "admin", "Admin"
