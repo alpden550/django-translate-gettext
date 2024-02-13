@@ -42,6 +42,8 @@ class Command(BaseCommand):
     def process_app_models(self, *, app_models: set[Model], **options) -> None:
         for model in app_models:
             module: str = model._meta.concrete_model.__module__
+            if len(module.split(".")) == 1:
+                continue
             module_path = module.replace(".", "/")
 
             update_py_file(file_path=module_path, formatted=options["format"])
