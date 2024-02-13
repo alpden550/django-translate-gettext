@@ -8,6 +8,15 @@ from django_translate_gettext.services.transformers import ClassDefTransformer
 
 
 def update_py_file(*, file_path: str, formatted: bool = False) -> None:
+    """
+    Update the python file with the gettext call wrapping.
+    Args:
+        file_path (str): The file path to update.
+        formatted (bool): If True, format the code after updating the file.
+
+    Returns:
+        None
+    """
     model_file = Path(file_path).with_suffix(".py").absolute()
     tree = ast.parse(model_file.read_text())
 
