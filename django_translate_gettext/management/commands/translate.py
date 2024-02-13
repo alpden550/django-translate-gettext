@@ -1,10 +1,7 @@
-from collections.abc import Generator
-
-from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db.models import Model
 
-from django_translate_gettext.services import update_py_file
+from django_translate_gettext.services import get_all_app_models, update_py_file
 
 
 class Command(BaseCommand):
@@ -23,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, **options) -> None:
         for app_name in options["apps"]:
             try:
-                app_models = apps.get_app_config(app_name).get_models()
+                app_models = get_all_app_models(app_label=app_name)
             except LookupError as error:
                 self.stdout.write(self.style.ERROR(error))
                 continue
@@ -42,7 +39,7 @@ class Command(BaseCommand):
             )
         )
 
-    def process_app_models(self, *, app_models: Generator[Model], **options) -> None:
+    def process_app_models(self, *, app_models: set[Model], **options) -> None:
         for model in app_models:
             module: str = model._meta.concrete_model.__module__
             module_path = module.replace(".", "/")
