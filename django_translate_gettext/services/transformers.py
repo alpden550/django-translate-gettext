@@ -16,7 +16,7 @@ class ClassDefTransformer(ast.NodeTransformer):
 
     def generate_class_gettext(self, *, instance: ast.ClassDef | stmt) -> ast.ClassDef:
         for body in instance.body:
-            if not isinstance(body, ast.Assign):
+            if not isinstance(body, ast.Assign) or body.targets[-1].id == "abstract":
                 continue
 
             if isinstance(body.value, ast.Constant):
@@ -82,6 +82,9 @@ class ClassDefTransformer(ast.NodeTransformer):
         return instance
 
     def generate_assign_gettext(self, *, instance: ast.Assign | stmt) -> ast.Assign:
+        if instance.targets[-1].id == "objects":
+            return instance
+
         with suppress(AttributeError):
             f_keys = ("ForeignKey", "ManyToManyField", "OneToOneField")
             func = instance.value.func
