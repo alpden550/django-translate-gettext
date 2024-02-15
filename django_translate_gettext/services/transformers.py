@@ -146,7 +146,7 @@ class ClassDefTransformer(ast.NodeTransformer):
             case ast.ClassDef(bases=[ast.Attribute(attr="TextChoices")]):
                 return self.generate_class_gettext(instance=node)
 
-            case ast.ClassDef(bases=[ast.Name(id=x)]) if x:
+            case ast.ClassDef(bases=[ast.Name(id=_), *_]):
                 for instance in node.body:
                     match instance:
                         case ast.ClassDef():
