@@ -1,8 +1,13 @@
 # Django-translate
 
-This is a django app that allows you to wrap django models fields with a translation field (not for Pycharm and docker-compose python interpretator).
+This is a django app that allows you to wrap django applications files fields with a translation field (not for Pycharm and docker-compose python interpretator).
 
-It uses the django model translation and gettext package to achieve this.
+It uses gettext package to achieve this and wrapping fields.
+
+v0.2.0 - Added support for admin files
+
+v0.1.0 - Initial release with models files support
+
 
 ## Installation
 
