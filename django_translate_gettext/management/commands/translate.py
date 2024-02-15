@@ -1,7 +1,12 @@
-from django.core.management.base import BaseCommand
-from django.db.models import Model
+import subprocess
+from contextlib import suppress
 
-from django_translate_gettext.services import get_all_app_models, update_py_file
+from django.apps import apps
+from django.core.management.base import BaseCommand
+from loguru import logger
+
+from django_translate_gettext.services import update_py_file
+from django_translate_gettext.services.files import fetch_app_files
 
 
 class Command(BaseCommand):
@@ -20,12 +25,12 @@ class Command(BaseCommand):
     def handle(self, **options) -> None:
         for app_name in options["apps"]:
             try:
-                app_models = get_all_app_models(app_label=app_name)
+                apps.get_app_config(app_name)
             except LookupError as error:
                 self.stdout.write(self.style.ERROR(error))
                 continue
 
-            self.process_app_models(app_models=app_models, **options)
+            self.process_app_files(app_name=app_name, **options)
 
         self.stdout.write(
             self.style.WARNING(
@@ -39,13 +44,12 @@ class Command(BaseCommand):
             )
         )
 
-    def process_app_models(self, *, app_models: set[Model], **options) -> None:
-        for model in app_models:
-            module: str = model._meta.concrete_model.__module__
-            if len(module.split(".")) == 1:
-                continue
-            module_path = module.replace(".", "/")
+    def process_app_files(self, *, app_name: str, **options) -> None:
+        for filepath in fetch_app_files(app_name=app_name):
+            with suppress(FileNotFoundError):
+                update_py_file(file_path=filepath)
 
-            update_py_file(file_path=module_path, formatted=options["format"])
-
-            self.stdout.write(self.style.SUCCESS("Successfully added gettext for model files."))
+        self.stdout.write(self.style.SUCCESS("Successfully added gettext for app files."))
+        if options["format"]:
+            logger.info(f"Formatting the code for files in app {app_name}")
+            subprocess.run(["ruff", "format", app_name], check=True)  # noqa: S603, S607
