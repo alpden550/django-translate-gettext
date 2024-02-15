@@ -105,6 +105,18 @@ class ClassDefTransformer(ast.NodeTransformer):
 
         return instance
 
+    def generate_funcdef_decorator_gettext(self, *, instance: ast.FunctionDef | stmt) -> ast.FunctionDef:
+        decorators = instance.decorator_list
+        for decorator in decorators:
+            if not isinstance(decorator, ast.Call):
+                continue
+            for keyword in decorator.keywords:
+                if keyword.arg == "description" and isinstance(keyword.value, ast.Constant):
+                    constant = keyword.value
+                    new_node = self.build_new_call_node(constant=constant.value)
+                    keyword.value = new_node
+        return instance
+
     @staticmethod
     def insert_getetxt_import(node: ast.Module) -> ast.Module:
         aliases = [body.names[-1].name for body in node.body if isinstance(body, ast.ImportFrom)]
@@ -124,11 +136,28 @@ class ClassDefTransformer(ast.NodeTransformer):
         return node
 
     def visit_ClassDef(self, node: ast.ClassDef) -> ast.ClassDef:  # noqa: N802
-        for instance in node.body:
-            match instance:
-                case ast.ClassDef():
-                    self.generate_class_gettext(instance=instance)
-                case ast.Assign():
-                    self.generate_assign_gettext(instance=instance)
+        match node:
+            case ast.ClassDef(bases=[ast.Attribute(attr="ModelAdmin")]):
+                for instance in node.body:
+                    match instance:
+                        case ast.FunctionDef(decorator_list=[ast.Call(keywords=[*_])]):
+                            self.generate_funcdef_decorator_gettext(instance=instance)
+
+            case ast.ClassDef(bases=[ast.Attribute(attr="TextChoices")]):
+                return self.generate_class_gettext(instance=node)
+
+            case ast.ClassDef(bases=[ast.Name(id=x)]) if x:
+                for instance in node.body:
+                    match instance:
+                        case ast.ClassDef():
+                            self.generate_class_gettext(instance=instance)
+                        case ast.Assign():
+                            self.generate_assign_gettext(instance=instance)
+
+            case ast.ClassDef(bases=[ast.Attribute(attr=a)]) if a == "Model":
+                for instance in node.body:
+                    match instance:
+                        case ast.Assign():
+                            self.generate_assign_gettext(instance=instance)
 
         return node
