@@ -4,7 +4,7 @@ This is a django app that allows you to wrap django applications files fields wi
 
 It uses gettext package to achieve this and wrapping fields.
 
-v.0.2.1 - Added support for clean models methods and ValidationError messages
+v.0.2.2 - Added support for clean models methods and ValidationError messages
 
 v0.2.0 - Added support for admin files
 
