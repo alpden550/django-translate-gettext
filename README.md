@@ -1,4 +1,4 @@
-# Django-translate
+# Django-translate-getetxt
 
 This is a django app that allows you to wrap django applications files fields with a translation field (not for Pycharm and docker-compose python interpretator).
 
