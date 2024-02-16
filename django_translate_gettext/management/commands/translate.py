@@ -1,9 +1,7 @@
-import subprocess
 from contextlib import suppress
 
 from django.apps import apps
 from django.core.management.base import BaseCommand
-from loguru import logger
 
 from django_translate_gettext.services import update_py_file
 from django_translate_gettext.services.files import fetch_app_files
@@ -47,9 +45,6 @@ class Command(BaseCommand):
     def process_app_files(self, *, app_name: str, **options) -> None:
         for filepath in fetch_app_files(app_name=app_name):
             with suppress(FileNotFoundError):
-                update_py_file(file_path=filepath)
+                update_py_file(file_path=filepath, formatted=options["format"])
 
         self.stdout.write(self.style.SUCCESS("Successfully added gettext for app files."))
-        if options["format"]:
-            logger.info(f"Formatting the code for files in app {app_name}")
-            subprocess.run(["ruff", "format", app_name], check=True)  # noqa: S603, S607
