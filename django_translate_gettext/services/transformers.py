@@ -8,6 +8,23 @@ class ClassDefTransformer(ast.NodeTransformer):
     def build_new_call_node(*, constant: str) -> ast.Call:
         return ast.Call(func=ast.Name(id="_", ctx=ast.Load()), args=[ast.Constant(constant)], keywords=[])
 
+    def build_args_node(self, *, args: list[ast.arg]) -> list[ast.arg]:
+        if args and isinstance(args[0], ast.Constant):
+            constant = args[0]
+            new_node = self.build_new_call_node(constant=constant.value)
+            args[0] = new_node
+        return args
+
+    def build_keywords_node_for_arg(self, *, keywords: list[ast.keyword], arg_name: str) -> list[ast.keyword]:
+        if not keywords:
+            return keywords
+        message = next((keyword for keyword in keywords if keyword.arg == arg_name), None)
+        if message and isinstance(message.value, ast.Constant):
+            constant = message.value
+            new_node = self.build_new_call_node(constant=constant.value)
+            message.value = new_node
+        return keywords
+
     def generate_tuple_gettext(self, *, value: ast.Tuple | stmt) -> ast.Tuple:
         last_constant = value.elts[-1]
         if isinstance(last_constant, ast.Constant):
@@ -58,11 +75,7 @@ class ClassDefTransformer(ast.NodeTransformer):
             return instance
 
         if instance.value.args:
-            constant = instance.value.args[-1]
-            if not isinstance(constant, ast.Constant):
-                return instance
-            new_node = self.build_new_call_node(constant=constant.value)
-            instance.value.args[-1] = new_node
+            instance.value.args = self.build_args_node(args=instance.value.args)
         return instance
 
     def generate_assign_keywords_gettext(self, *, instance: ast.Assign | stmt) -> ast.Assign:
@@ -117,6 +130,30 @@ class ClassDefTransformer(ast.NodeTransformer):
                     keyword.value = new_node
         return instance
 
+    def generate_funcdef_raising_gettext(self, *, instance: ast.FunctionDef | stmt) -> ast.FunctionDef:
+        for body in instance.body:
+            for item in body.body:
+                if not isinstance(item, ast.Raise):
+                    continue
+                exc = item.exc
+
+                if hasattr(exc, "elts") and exc.elts:
+                    for item in exc.elts:  # noqa: PLW2901
+                        if item.args:
+                            item.args = self.build_args_node(args=item.args)
+                            continue
+                        if item.keywords:
+                            item.keywords = self.build_keywords_node_for_arg(keywords=item.keywords, arg_name="message")
+                            continue
+                if hasattr(exc, "args") and exc.args:
+                    exc.args = self.build_args_node(args=exc.args)
+                    continue
+                if hasattr(exc, "keywords") and exc.keywords:
+                    exc.keywords = self.build_keywords_node_for_arg(keywords=exc.keywords, arg_name="message")
+                    continue
+
+        return instance
+
     @staticmethod
     def insert_getetxt_import(node: ast.Module) -> ast.Module:
         aliases = [body.names[-1].name for body in node.body if isinstance(body, ast.ImportFrom)]
@@ -153,6 +190,8 @@ class ClassDefTransformer(ast.NodeTransformer):
                             self.generate_class_gettext(instance=instance)
                         case ast.Assign():
                             self.generate_assign_gettext(instance=instance)
+                        case ast.FunctionDef(body=[ast.If()]):
+                            self.generate_funcdef_raising_gettext(instance=instance)
 
             case ast.ClassDef(bases=[ast.Attribute(attr=a)]) if a == "Model":
                 for instance in node.body:
