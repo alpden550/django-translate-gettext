@@ -8,7 +8,13 @@ class ClassDefTransformer(ast.NodeTransformer):
     def build_new_call_node(*, constant: str) -> ast.Call:
         return ast.Call(func=ast.Name(id="_", ctx=ast.Load()), args=[ast.Constant(constant)], keywords=[])
 
-    def build_args_node(self, *, args: list[ast.arg]) -> list[ast.arg]:
+    def build_args_node(self, *, args: list[ast.Dict | ast.Constant]) -> list[ast.Dict | ast.Constant]:
+        if args and isinstance(args[0], ast.Dict):
+            dict_args: ast.Dict = args[0]
+            param = dict_args.values[0]
+            new_node = self.build_new_call_node(constant=param.value)
+            args[0].values[0] = new_node
+            return args
         if args and isinstance(args[0], ast.Constant):
             constant = args[0]
             new_node = self.build_new_call_node(constant=constant.value)
