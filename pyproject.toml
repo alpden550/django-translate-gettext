@@ -41,6 +41,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 120
+fix = true
 exclude = [
   ".venv",
   "*migrations*",
@@ -51,50 +52,8 @@ exclude = [
 ignore-init-module-imports = true
 preview = true
 explicit-preview-rules = true
-select = [
-  "E",    # pycodestyle
-  "W",    # pycodestyle
-  "F",    # pyflakes
-  "I",    # isort
-  "A",    # flake8-builtins
-  "COM",  # flake8-commas
-  "T20",  # flake8-print
-  "Q",    # flake8-quotes
-  "BLE",  # flake8-blind-except
-  "N",    # pep8-naming
-  "UP",   # pyupgrade
-  "B",    # flake8-bugbear
-  "SIM", # flake8-simplify
-  "N",    # pep8-naming
-  "S",    # flake8-bandit
-  "FBT",  # flake8-boolean-trap
-  "C4",   # flake8-comprehensions
-  "PIE",  # flake8-pie
-  "T",    # flake8-print
-  "PT",   # flake8-pytest-style
-  "RET",  # flake8-return
-  "TID",  # flake8-tidy-imports
-  "ERA",  # flake8-eradicate
-  "PL",   # Pylint
-  "TRY",  # tryceratops
-  "PERF", # Perflint
-  "FURB", # refurb
-  "RUF",  # ruff
-  "PTH",  # flake8-use-pathlib
-  "C90", # mccabe
-  "EM", # flake8-errmsg
-  "ISC", # flake8-implicit-str-concat
-  "ICN", # flake8-import-conventions,
-  "G", # flake8-logging-forma
-  "DTZ", # flake8-datetimez
-  "EXE", # flake8-executable
-  "INP", # flake8-no-pep420
-  "RSE", # flake8-raise,
-  "ARG", # flake8-unused-arguments
-  "TD", # flake8-todos
-  "FLY", # flynt,
-]
-ignore= ["S101", "COM812", "ISC001"]
+select = ["ALL"]
+ignore= ["S101", "COM812", "ISC001", "D100", "D101", "D102", "D103", "D104", "FA102", "PD011"]
 
 [tool.ruff.format]
 preview = true
