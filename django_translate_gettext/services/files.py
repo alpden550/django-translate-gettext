@@ -10,22 +10,21 @@ from django_translate_gettext.services.transformers import ClassDefTransformer
 
 
 def fetch_app_files(app_name: str) -> Iterator[Path]:
-    """
-    Fetch all python files in the app directory excluding the files in the TO_SKIP list.
+    """Fetch all python files in the app directory excluding the files in the TO_SKIP list.
+
     Args:
         app_name (str): The app name to fetch the files from.
 
     Returns:
-
+        Iterator[Path]: The iterator of Pathlib objects for the files in the app.
     """
-
     all_files = {file for file in Path(app_name).rglob("*.py") if file.is_file()}
     return filter(lambda x: not any(skip in str(x) for skip in TO_SKIP), all_files)
 
 
 def update_py_file(*, file_path: Path, formatted: bool = False) -> None:
-    """
-    Update the python file with the gettext call wrapping.
+    """Update the python file with the gettext call wrapping.
+
     Args:
         file_path (Path): The file path Pathlib object to update.
         formatted (bool): Whether to format the file or not.
