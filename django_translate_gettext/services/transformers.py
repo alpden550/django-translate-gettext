@@ -144,12 +144,12 @@ class ClassDefTransformer(ast.NodeTransformer):
                 exc = item.exc
 
                 if hasattr(exc, "elts") and exc.elts:
-                    for item in exc.elts:  # noqa: PLW2901
-                        if item.args:
-                            item.args = self.build_args_node(args=item.args)
+                    for elt in exc.elts:
+                        if elt.args:
+                            elt.args = self.build_args_node(args=elt.args)
                             continue
-                        if item.keywords:
-                            item.keywords = self.build_keywords_node_for_arg(keywords=item.keywords, arg_name="message")
+                        if elt.keywords:
+                            elt.keywords = self.build_keywords_node_for_arg(keywords=elt.keywords, arg_name="message")
                             continue
                 if hasattr(exc, "args") and exc.args:
                     exc.args = self.build_args_node(args=exc.args)
