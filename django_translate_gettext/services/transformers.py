@@ -132,8 +132,18 @@ class ClassDefTransformer(ast.NodeTransformer):
             for keyword in decorator.keywords:
                 if keyword.arg == "description" and isinstance(keyword.value, ast.Constant):
                     constant = keyword.value
-                    new_node = self.build_new_call_node(constant=constant.value)
+                    new_node = self.build_new_call_node(constant=constant.value.title())
                     keyword.value = new_node
+
+            description = next((keyword for keyword in decorator.keywords if keyword.arg == "description"), None)
+            if description is None:
+                decorator.keywords.append(
+                    ast.keyword(
+                        arg="description",
+                        value=self.build_new_call_node(constant=instance.name.replace("_", " ").title()),
+                    )
+                )
+
         return instance
 
     def generate_funcdef_raising_gettext(self, *, instance: ast.FunctionDef | stmt) -> ast.FunctionDef:
