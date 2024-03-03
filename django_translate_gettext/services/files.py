@@ -1,6 +1,5 @@
 import ast
 import subprocess
-from collections.abc import Iterator
 from pathlib import Path
 
 from loguru import logger
@@ -9,17 +8,20 @@ from django_translate_gettext.constants import TO_SKIP
 from django_translate_gettext.services.transformers import ClassDefTransformer
 
 
-def fetch_app_files(app_name: str) -> Iterator[Path]:
+def fetch_app_files(app_name: str) -> set[Path]:
     """Fetch all python files in the app directory excluding the files in the TO_SKIP list.
 
     Args:
         app_name (str): The app name to fetch the files from.
 
     Returns:
-        Iterator[Path]: The iterator of Pathlib objects for the files in the app.
+        set[Path]: set of filtered Pathlib objects for the files in the app.
     """
-    all_files = {file for file in Path(app_name).rglob("*.py") if file.is_file()}
-    return filter(lambda x: not any(skip in str(x) for skip in TO_SKIP), all_files)
+    return {
+        file
+        for file in Path(app_name).rglob("*.py")
+        if file.is_file() and not any(skip in str(file) for skip in TO_SKIP)
+    }
 
 
 def update_py_file(*, file_path: Path, formatted: bool = False) -> None:
