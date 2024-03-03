@@ -10,7 +10,7 @@ from django_translate_gettext.services.files import fetch_app_files
 class Command(BaseCommand):
     help = "Add calling gettext for the model files"
 
-    def add_arguments(self, parser) -> None:  # noqa: ANN001
+    def add_arguments(self, parser) -> None:
         parser.add_argument(
             "apps", nargs="+", type=str, help="Apps to add gettext for the model files.\nFor example: app1 app2 app3"
         )
@@ -20,7 +20,7 @@ class Command(BaseCommand):
             help="Call Ruff formatting tool to format the code after generating new model files.",
         )
 
-    def handle(self, **options) -> None:  # noqa: ANN003
+    def handle(self, **options) -> None:
         for app_name in options["apps"]:
             try:
                 apps.get_app_config(app_name)
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             )
         )
 
-    def process_app_files(self, *, app_name: str, **options) -> None:  # noqa: ANN003
+    def process_app_files(self, *, app_name: str, **options) -> None:
         for filepath in fetch_app_files(app_name=app_name):
             with suppress(FileNotFoundError):
                 update_py_file(file_path=filepath, formatted=options["format"])
