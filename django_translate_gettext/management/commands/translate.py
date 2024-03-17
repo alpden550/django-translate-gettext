@@ -1,7 +1,10 @@
+import subprocess
 from contextlib import suppress
+from pathlib import Path
 
 from django.apps import apps
 from django.core.management.base import BaseCommand
+from loguru import logger
 
 from django_translate_gettext.services import update_py_file
 from django_translate_gettext.services.files import fetch_app_files
@@ -15,6 +18,7 @@ class Command(BaseCommand):
             "apps", nargs="+", type=str, help="Apps to add gettext for the model files.\nFor example: app1 app2 app3"
         )
         parser.add_argument(
+            "-f",
             "--format",
             action="store_true",
             help="Call Ruff formatting tool to format the code after generating new model files.",
@@ -42,9 +46,17 @@ class Command(BaseCommand):
             )
         )
 
+    @staticmethod
+    def process_py_file(*, file_path: Path, formatted=True) -> None:
+        with suppress(FileNotFoundError):
+            update_py_file(file_path=file_path)
+            filename = file_path.absolute()
+            if formatted:
+                logger.info(f"Formatting the code for files in app {filename!s}")
+                subprocess.run(["ruff", "format", f"{filename!s}"], check=True)  # noqa: S603, S607
+
     def process_app_files(self, *, app_name: str, **options) -> None:
-        for filepath in fetch_app_files(app_name=app_name):
-            with suppress(FileNotFoundError):
-                update_py_file(file_path=filepath, formatted=options["format"])
+        for file_path in fetch_app_files(app_name=app_name):
+            self.process_py_file(file_path=file_path, formatted=options["format"])
 
         self.stdout.write(self.style.SUCCESS("Successfully added gettext for app files."))
