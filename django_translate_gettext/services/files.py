@@ -1,8 +1,5 @@
 import ast
-import subprocess
 from pathlib import Path
-
-from loguru import logger
 
 from django_translate_gettext.constants import TO_SKIP
 from django_translate_gettext.services.transformers import ClassDefTransformer
@@ -24,12 +21,11 @@ def fetch_app_files(app_name: str) -> set[Path]:
     }
 
 
-def update_py_file(*, file_path: Path, formatted: bool = False) -> None:
+def update_py_file(*, file_path: Path) -> None:
     """Update the python file with the gettext call wrapping.
 
     Args:
         file_path (Path): The file path Pathlib object to update.
-        formatted (bool): Whether to format the file or not.
 
     Returns:
         None
@@ -42,7 +38,3 @@ def update_py_file(*, file_path: Path, formatted: bool = False) -> None:
 
     code = ast.unparse(new_tree)
     file_path.write_text(code)
-
-    if formatted:
-        logger.info(f"Formatting the code for files in app {file_path!s}")
-        subprocess.run(["ruff", "format", f"{file_path!s}"], check=True)  # noqa: S603, S607
