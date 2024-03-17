@@ -12,6 +12,10 @@ class ClassDefTransformer(ast.NodeTransformer):
         if args and isinstance(args[0], ast.Dict):
             dict_args: ast.Dict = args[0]
             param = dict_args.values[0]
+
+            if hasattr(param, "func"):
+                return args
+
             new_node = self.build_new_call_node(constant=param.value)
             args[0].values[0] = new_node
             return args
