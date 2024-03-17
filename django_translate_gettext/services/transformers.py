@@ -8,7 +8,7 @@ class ClassDefTransformer(ast.NodeTransformer):
     def build_new_call_node(*, constant: str) -> ast.Call:
         return ast.Call(func=ast.Name(id="_", ctx=ast.Load()), args=[ast.Constant(constant)], keywords=[])
 
-    def build_args_node(self, *, args: list[ast.Dict | ast.Constant]) -> list[ast.Dict | ast.Constant]:
+    def build_args_node(self, *, args: list[ast.Dict | ast.Constant | ast.expr]) -> list[ast.Dict | ast.Constant]:
         if args and isinstance(args[0], ast.Dict):
             dict_args: ast.Dict = args[0]
             param = dict_args.values[0]
@@ -41,20 +41,24 @@ class ClassDefTransformer(ast.NodeTransformer):
             value.elts[-1] = self.build_new_call_node(constant=last_constant.value)
         return value
 
+    def generate_class_boby_gettext(self, *, body: ast.Assign, instance: ast.ClassDef | stmt):
+        if isinstance(body.value, ast.Constant):
+            constant = body.value.value
+            new_node = self.build_new_call_node(constant=constant)
+            body.value = new_node
+
+        if isinstance(body.value, ast.Tuple) and body.value.elts:
+            if instance.name == "Meta":
+                return None
+            body.value = self.generate_tuple_gettext(value=body.value)
+
+        return body
+
     def generate_class_gettext(self, *, instance: ast.ClassDef | stmt) -> ast.ClassDef:
         for body in instance.body:
             if not isinstance(body, ast.Assign) or body.targets[-1].id == "abstract":
                 continue
-
-            if isinstance(body.value, ast.Constant):
-                constant = body.value.value
-                new_node = self.build_new_call_node(constant=constant)
-                body.value = new_node
-
-            if isinstance(body.value, ast.Tuple) and body.value.elts:
-                if instance.name == "Meta":
-                    continue
-                body.value = self.generate_tuple_gettext(value=body.value)
+            self.generate_class_boby_gettext(body=body, instance=instance)
 
         return instance
 
@@ -88,19 +92,25 @@ class ClassDefTransformer(ast.NodeTransformer):
             instance.value.args = self.build_args_node(args=instance.value.args)
         return instance
 
-    def generate_assign_keywords_gettext(self, *, instance: ast.Assign | stmt) -> ast.Assign:
-        if instance.value.keywords:
-            for keyword in instance.value.keywords:
-                if keyword.arg in ("verbose_name", "help_text"):
-                    constant = keyword.value
-                    if not isinstance(constant, ast.Constant):
-                        continue
-                    new_node = self.build_new_call_node(constant=constant.value)
-                    keyword.value = new_node
+    def generate_keyword_gettext(self, *, keyword: ast.keyword) -> ast.keyword:
+        if keyword.arg in ("verbose_name", "help_text"):
+            constant = keyword.value
+            if not isinstance(constant, ast.Constant):
+                return keyword
+            new_node = self.build_new_call_node(constant=constant.value)
+            keyword.value = new_node
+        return keyword
 
-            verbose = next((keyword for keyword in instance.value.keywords if keyword.arg == "verbose_name"), None)
-            if not instance.value.args and verbose is None:
-                self.append_verbose_name(instance=instance)
+    def generate_assign_keywords_gettext(self, *, instance: ast.Assign | stmt) -> ast.Assign:
+        if not instance.value.keywords:
+            return instance
+
+        for keyword in instance.value.keywords:
+            self.generate_keyword_gettext(keyword=keyword)
+
+        verbose = next((keyword for keyword in instance.value.keywords if keyword.arg == "verbose_name"), None)
+        if not instance.value.args and verbose is None:
+            self.append_verbose_name(instance=instance)
 
         return instance
 
@@ -128,25 +138,51 @@ class ClassDefTransformer(ast.NodeTransformer):
 
         return instance
 
+    def generate_decorator_gettext(self, *, decorator: ast.Call | stmt, instance_name: str) -> ast.Call:
+        for keyword in decorator.keywords:
+            if keyword.arg == "description" and isinstance(keyword.value, ast.Constant):
+                constant = keyword.value
+                new_node = self.build_new_call_node(constant=constant.value.title())
+                keyword.value = new_node
+
+        description = next((keyword for keyword in decorator.keywords if keyword.arg == "description"), None)
+        if description is None:
+            decorator.keywords.append(
+                ast.keyword(
+                    arg="description",
+                    value=self.build_new_call_node(constant=instance_name.replace("_", " ").title()),
+                )
+            )
+        return decorator
+
     def generate_funcdef_decorator_gettext(self, *, instance: ast.FunctionDef | stmt) -> ast.FunctionDef:
         decorators = instance.decorator_list
         for decorator in decorators:
             if not isinstance(decorator, ast.Call):
                 continue
-            for keyword in decorator.keywords:
-                if keyword.arg == "description" and isinstance(keyword.value, ast.Constant):
-                    constant = keyword.value
-                    new_node = self.build_new_call_node(constant=constant.value.title())
-                    keyword.value = new_node
+            self.generate_decorator_gettext(decorator=decorator, instance_name=instance.name)
 
-            description = next((keyword for keyword in decorator.keywords if keyword.arg == "description"), None)
-            if description is None:
-                decorator.keywords.append(
-                    ast.keyword(
-                        arg="description",
-                        value=self.build_new_call_node(constant=instance.name.replace("_", " ").title()),
-                    )
-                )
+        return instance
+
+    def generate_elt_gettext(self, *, elts: list[ast.Call]) -> list[ast.Call]:
+        for elt in elts:
+            if elt.args:
+                elt.args = self.build_args_node(args=elt.args)
+            elif elt.keywords:
+                elt.keywords = self.build_keywords_node_for_arg(keywords=elt.keywords, arg_name="message")
+        return elts
+
+    def generate_raise_gettext(self, *, instance: ast.Raise | stmt) -> ast.Raise:
+        exc = instance.exc
+
+        if hasattr(exc, "elts") and exc.elts:
+            self.generate_elt_gettext(elts=exc.elts)
+        if hasattr(exc, "args") and exc.args:
+            exc.args = self.build_args_node(args=exc.args)
+            return instance
+        if hasattr(exc, "keywords") and exc.keywords:
+            exc.keywords = self.build_keywords_node_for_arg(keywords=exc.keywords, arg_name="message")
+            return instance
 
         return instance
 
@@ -155,22 +191,7 @@ class ClassDefTransformer(ast.NodeTransformer):
             for item in body.body:
                 if not isinstance(item, ast.Raise):
                     continue
-                exc = item.exc
-
-                if hasattr(exc, "elts") and exc.elts:
-                    for elt in exc.elts:
-                        if elt.args:
-                            elt.args = self.build_args_node(args=elt.args)
-                            continue
-                        if elt.keywords:
-                            elt.keywords = self.build_keywords_node_for_arg(keywords=elt.keywords, arg_name="message")
-                            continue
-                if hasattr(exc, "args") and exc.args:
-                    exc.args = self.build_args_node(args=exc.args)
-                    continue
-                if hasattr(exc, "keywords") and exc.keywords:
-                    exc.keywords = self.build_keywords_node_for_arg(keywords=exc.keywords, arg_name="message")
-                    continue
+                self.generate_raise_gettext(instance=item)
 
         return instance
 
