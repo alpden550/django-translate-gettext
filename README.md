@@ -1,14 +1,19 @@
 # Django-translate-getetxt
 
-This is a django app that allows you to wrap django applications files fields with a translation field (not for Pycharm and docker-compose python interpretator).
+This is a django app that allows you to wrap django applications files fields with a gettext translation field (not for Pycharm and docker-compose python interpretator).
+
+And translate the `.po` files fields with the help of the Google Translator (use --makemessages flag).
 
 It uses gettext package to achieve this and wrapping fields.
 
-v.0.2.2 - Added support for clean models methods and ValidationError messages
+v.0.3.0—Added creating po files for the given lang code and filling the po files with the translation fields
+(Use Google Translator)
 
-v0.2.0 - Added support for admin files
+v.0.2.2—Added support for clean models methods and ValidationError messages
 
-v0.1.0 - Initial release with models files support
+v0.2.0-Added support for admin files
+
+v0.1.0—Initial release with models files support
 
 
 ## Installation
@@ -37,10 +42,10 @@ Call django commands to create the translation fields for your apps, use `--form
 Example:
 
 ```bash
-python manage.py translate app1 app2 app3 app4 --format
+python manage.py translate app1 app2 app3 app4 --format --makemessages ru fr it de ar def
 ```
 
-[![asciicast](https://asciinema.org/a/K7TWvXujFr65D4hq0yiYRaXEV.svg)](https://asciinema.org/a/K7TWvXujFr65D4hq0yiYRaXEV)
+[![asciicast](https://asciinema.org/a/3ALfQ9tpAzML4RZQXbYAeJxCE.svg)](https://asciinema.org/a/3ALfQ9tpAzML4RZQXbYAeJxCE)
 
 Models files before:
 
