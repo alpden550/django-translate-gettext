@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-translate-gettext"
-version = "0.2.4"
+version = "0.3.0"
 description = "Django app to wrap app files class fields to gettext calling for the given apps"
 authors = ["Denis Novikov <alpden550@gmail.com>"]
 readme = "README.md"
@@ -32,6 +32,10 @@ python = "^3.11"
 django = "^4.0.1"
 loguru = "^0.7.2"
 ruff = "^0.3.0"
+deep-translator = "^1.11.4"
+
+[tool.poetry.group.dev.dependencies]
+complexipy = "^0.3.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -51,7 +55,7 @@ ignore-init-module-imports = true
 preview = true
 explicit-preview-rules = true
 select = ["ALL"]
-ignore= ["S101", "COM812", "ISC001", "FA102", "PD011", "ANN", "D"]
+ignore= ["S101", "COM812", "ISC001", "FA102", "PD011", "ANN", "D", "TRY003", "EM102"]
 
 [tool.ruff.format]
 preview = true
