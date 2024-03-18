@@ -37,7 +37,11 @@ INSTALLED_APPS = [
 ]
 ```
 
-Call django commands to create the translation fields for your apps, use `--format` flag to call ruff format tool after files changed.
+Call django commands to create the translation fields for your apps. 
+
+Use `--format` or `-f` flag to call ruff format tool after files changed.
+
+Use `--makemessages` or `-mm` flag and pass locales to create translated `.po` files
 
 Example:
 
