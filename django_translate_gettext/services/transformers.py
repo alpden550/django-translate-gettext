@@ -165,7 +165,9 @@ class ClassDefTransformer(ast.NodeTransformer):
                 hasattr(decorator, "func") and decorator.func.attr != "display"
             ):
                 continue
-            self.generate_decorator_gettext(decorator=decorator, instance_name=instance.name)
+            func = decorator.func
+            if hasattr(func, "attr") and func.attr == "display":
+                self.generate_decorator_gettext(decorator=decorator, instance_name=instance.name)
 
         return instance
 
