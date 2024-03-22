@@ -12,6 +12,8 @@ from django_translate_gettext.services import update_py_file
 from django_translate_gettext.services.files import fetch_app_files
 from django_translate_gettext.services.translators import PoFileTranslator
 
+MAX_WORKERS = 5
+
 
 class FileToGettext(NamedTuple):
     file_path: Path
@@ -83,8 +85,9 @@ class Command(BaseCommand):
         with suppress(subprocess.CalledProcessError):
             subprocess.run(["python", "manage.py", "makemessages", *langs], check=True)  # noqa: S603, S607
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            lang_codes = options["makemessages"]
+        lang_codes = options["makemessages"]
+        max_workers = MAX_WORKERS if len(lang_codes) > MAX_WORKERS else len(lang_codes)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(self.translate_lang_code, code) for code in lang_codes]
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -107,7 +110,8 @@ class Command(BaseCommand):
                 subprocess.run(["ruff", "format", f"{filename!s}"], check=True)  # noqa: S603, S607
 
     def add_gettext_for_files(self, files: list[FileToGettext]) -> None:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        max_workers = MAX_WORKERS if len(files) > MAX_WORKERS else len(files)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(self.gettext_py_file, f.file_path, f.formatted) for f in files]
             for future in concurrent.futures.as_completed(futures):
                 try:
