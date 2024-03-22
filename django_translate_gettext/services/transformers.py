@@ -160,7 +160,9 @@ class ClassDefTransformer(ast.NodeTransformer):
         for decorator in decorators:
             if not isinstance(decorator, ast.Call):
                 continue
-            self.generate_decorator_gettext(decorator=decorator, instance_name=instance.name)
+            func = decorator.func
+            if hasattr(func, "attr") and func.attr == "display":
+                self.generate_decorator_gettext(decorator=decorator, instance_name=instance.name)
 
         return instance
 
