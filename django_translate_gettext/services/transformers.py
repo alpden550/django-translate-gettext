@@ -58,6 +58,9 @@ class ClassDefTransformer(ast.NodeTransformer):
         for body in instance.body:
             if not isinstance(body, ast.Assign) or body.targets[-1].id == "abstract":
                 continue
+            if instance.name == "Meta" and not body.targets[-1].id.startswith("verbose"):
+                continue
+
             self.generate_class_boby_gettext(body=body, instance=instance)
 
         return instance
@@ -125,7 +128,7 @@ class ClassDefTransformer(ast.NodeTransformer):
                 self.generate_fk_gettext(instance=instance)
                 return instance
 
-        if isinstance(instance.value, ast.Tuple):
+        if isinstance(instance.value, ast.Tuple) and not instance.value.dims:
             instance.value = self.generate_tuple_gettext(value=instance.value)
             return instance
 
@@ -155,10 +158,12 @@ class ClassDefTransformer(ast.NodeTransformer):
             )
         return decorator
 
-    def generate_funcdef_decorator_gettext(self, *, instance: ast.FunctionDef | stmt) -> ast.FunctionDef:
+    def generate_display_decorator_gettext(self, *, instance: ast.FunctionDef | stmt) -> ast.FunctionDef:
         decorators = instance.decorator_list
         for decorator in decorators:
-            if not isinstance(decorator, ast.Call):
+            if not isinstance(decorator, ast.Call) and (
+                hasattr(decorator, "func") and decorator.func.attr != "display"
+            ):
                 continue
             self.generate_decorator_gettext(decorator=decorator, instance_name=instance.name)
 
@@ -219,7 +224,7 @@ class ClassDefTransformer(ast.NodeTransformer):
                 for instance in node.body:
                     match instance:
                         case ast.FunctionDef(decorator_list=[ast.Call(keywords=[*_])]):
-                            self.generate_funcdef_decorator_gettext(instance=instance)
+                            self.generate_display_decorator_gettext(instance=instance)
 
             case ast.ClassDef(bases=[ast.Attribute(attr="TextChoices")]):
                 return self.generate_class_gettext(instance=node)
@@ -233,6 +238,8 @@ class ClassDefTransformer(ast.NodeTransformer):
                             self.generate_assign_gettext(instance=instance)
                         case ast.FunctionDef(body=[ast.If()]):
                             self.generate_funcdef_raising_gettext(instance=instance)
+                        case ast.FunctionDef(decorator_list=[ast.Call(keywords=[*_])]):
+                            self.generate_display_decorator_gettext(instance=instance)
 
             case ast.ClassDef(bases=[ast.Attribute(attr=a)]) if a == "Model":
                 for instance in node.body:
