@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-translate-gettext"
-version = "0.3.5"
+version = "0.3.6"
 description = "Django app to wrap app files class fields to gettext calling for the given apps"
 authors = ["Denis Novikov <alpden550@gmail.com>"]
 readme = "README.md"
@@ -31,8 +31,8 @@ keywords = ["django", "django-orm", "django app", "ast", "orm"]
 python = "^3.11"
 django = "^4.0.1"
 loguru = "^0.7.2"
-ruff = "^0.3.0"
 deep-translator = "^1.11.4"
+ruff = "^0.4.3"
 
 [tool.poetry.group.dev.dependencies]
 complexipy = "^0.3.1"
